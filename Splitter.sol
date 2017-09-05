@@ -9,13 +9,6 @@ contract Splitter {
         owner = msg.sender;
     }
     
-    function checkBalanceOfTheSplitter() returns (uint){
-        return this.balance;
-    }
-    
-    function getBalance(address adr) returns (uint){
-        return balanceOf[adr];
-    }
     function sendMoney(address adr1, address adr2) payable returns(bool) {
         address sender = msg.sender;
         uint amount = msg.value;
@@ -32,5 +25,16 @@ contract Splitter {
         balanceOf[adr2] += amount/2;
         
         return true;
+    }
+    
+    function withdraw() public returns(bool success){
+        success = false;
+        require(balanceOf[msg.sender]>0);
+        uint value = balanceOf[msg.sender];
+        
+        balanceOf[msg.sender] = 0;
+        msg.sender.transfer(value);
+        
+        success = true;
     }
 }
