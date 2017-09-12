@@ -24,7 +24,7 @@ contract Shopfront is Adminstrated{
     event logProduct(bytes32 nameHash, bytes32 name, uint price, address owner);
     event logBuy(address sender, bytes32 productId);
     event logWithdrawMoney(address sender);
-    
+    event logRemovedProduct(bytes32 productId);
     uint counter = 0;
     
     function addProduct(bytes32 name, uint price) public returns(bool){
@@ -59,6 +59,16 @@ contract Shopfront is Adminstrated{
         
         logWithdrawMoney(msg.sender);
         return true;
+    }
+    
+    function removeProduct(bytes32 productId) returns(bool){
+        if(msg.sender==products[productId].owner){
+            delete products[productId];
+            logRemovedProduct(productId);
+            return true;
+        }
+        
+        
     }
 
     function kill(){
