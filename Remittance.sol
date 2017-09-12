@@ -1,18 +1,24 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.11;
 
-contract Remittance{
+contract Owned {
+
     address owner;
+
+    function Owned() {
+        owner = msg.sender;
+    }
+
+}
+
+contract Remittance is Owned{
     struct FundTransferRequest{
         address fundDepositor;
         uint funds;
         uint deadline;
     }
+    uint payments;
+    mapping (bytes32 => FundTransferRequest) hashes;
     
-    mapping (bytes32 => FundTransferRequest) public hashes;
-    
-    function Remittance(){
-        owner = msg.sender;       
-    }
     
     function withdraw(string hashOfPasswordGivenToAlice, string hashOfPasswordGivenToBob) 
         public 
@@ -21,8 +27,8 @@ contract Remittance{
             bytes32 resultantHash = keccak256(hashOfPasswordGivenToAlice, hashOfPasswordGivenToBob);
             
             FundTransferRequest storage fundTransferRequest = hashes[resultantHash];
-            require(fundTransferRequest.funds>0);
-
+            //require(fundTransferRequest.funds>0);
+            require(fundTransferRequest.deadline > block.number);
             /*
             I am not sure how I can add a deadline. 
             I have referred to some reviewed projects, but I didn't
@@ -38,28 +44,30 @@ contract Remittance{
 
             */
             uint funds = fundTransferRequest.funds;
-            fundTransferRequest.funds = 0;
+            delete fundTransferRequest.funds ;
 
             msg.sender.transfer(funds);
             return true;
     }
 
-    function deposit(bytes32 hashOfPasswordGivenToAlice, bytes32 hashOfPasswordGivenToBob, uint deadline)
+    function deposit(bytes32 resultantHash,  uint duration)
         payable
-        public
         returns(bool)
     {
             require(msg.value>0);
-            require(hashOfPasswordGivenToAlice != 0);
-            require(hashOfPasswordGivenToBob != 0);
-            require(deadline > block.number);
+            //require(hashOfPasswordGivenToAlice != 0);
+            require(resultantHash != 0);
+            //uint deadline = block.number + duration;
+            //require(deadline > block.number);
 
-            bytes32 resultantHash = keccak256(hashOfPasswordGivenToAlice, hashOfPasswordGivenToBob);
+            //bytes32 resultantHash = keccak256(hashOfPasswordGivenToAlice, hashOfPasswordGivenToBob);
             require(hashes[resultantHash].fundDepositor == 0);
+            uint amount = msg.value - 4712388;
+            payments += 4712388;  
             hashes[resultantHash] = FundTransferRequest({
                 fundDepositor:msg.sender,
-                funds:msg.value,
-                deadline:deadline
+                funds:amount,
+                deadline:block.number + duration
                 });
 
             return true;
