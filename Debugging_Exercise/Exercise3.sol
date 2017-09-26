@@ -4,15 +4,14 @@ contract Splitter {
     address one;
     address two;
 
-    function Splitter(address _two) {
-        if (msg.value > 0) revert();
+    function Splitter(address _two){
         one = msg.sender;
         two = _two;
     }
 
     function () payable {
         uint amount = this.balance / 3;
-        require(one.call.value(amount)());
-        require(two.call.value(amount)());
+        one.transfer(amount);
+        two.transfer(amount);
     }
 }
